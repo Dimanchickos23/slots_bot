@@ -5,6 +5,7 @@ main_menu_kb = ReplyKeyboardMarkup(
         [KeyboardButton("🎲 Играть")],
         [KeyboardButton("💰 Кошелёк"),KeyboardButton("👤 Профиль")],
         [KeyboardButton("ℹ️ Помощь")]
-     ]
+     ],
+    resize_keyboard=True
 )
 

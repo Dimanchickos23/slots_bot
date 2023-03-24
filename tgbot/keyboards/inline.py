@@ -18,7 +18,7 @@ wallet_kb = InlineKeyboardMarkup(row_width=2,
                                      [
                                          InlineKeyboardButton("🎁 Подарить", callback_data="present"),
                                          InlineKeyboardButton("💌 Промокоды", callback_data="promos")
-                                      ],
+                                     ],
                                      [InlineKeyboardButton("💳 Вывод средств", callback_data="withdrawal")]
                                  ])
 
@@ -28,14 +28,41 @@ referral_kb = InlineKeyboardMarkup(row_width=1,
                                    ])
 
 back_cb = CallbackData('back', 'action')
-# post_callback.filter(action="post")
-back_kb = InlineKeyboardMarkup(row_width=1)
+
+
+def back_kb(action):
+    kb = InlineKeyboardMarkup(row_width=1,
+                              inline_keyboard=[
+                                  [InlineKeyboardButton(text="🔙 Назад",
+                                                        callback_data=back_cb.new(action=action))]
+                              ])
+    return kb
+
+
+promo_kb = InlineKeyboardMarkup(row_width=2,
+                                inline_keyboard=[
+                                    [InlineKeyboardButton("💌 Ввести", callback_data="use_code"),
+                                     InlineKeyboardButton("💰 Купить", callback_data="buy_code")],
+                                    [InlineKeyboardButton(text="🔙 Назад",
+                                                          callback_data=back_cb.new(action="to_wallet"))]
+                                ])
+
+ref_value_kb = InlineKeyboardMarkup(row_width=1,
+                                    inline_keyboard=[
+                                        [InlineKeyboardButton(text="💰 Перевести на основной счет",
+                                                              callback_data="bonus_funds")]
+                                    ])
 
 help_kb = InlineKeyboardMarkup(row_width=2,
                                inline_keyboard=[
                                    # [InlineKeyboardButton(""), InlineKeyboardButton("")],
                                    # [InlineKeyboardButton(""),InlineKeyboardButton("")],
                                    # [InlineKeyboardButton("")],
-                                   [InlineKeyboardButton("👤 Администратор-1",url="https://t.me/dimanchickos")],
-                                   [InlineKeyboardButton("👤 Администратор-2",url="https://t.me/tgmngr")]
+                                   [InlineKeyboardButton("👤 Администратор-1", url="https://t.me/dimanchickos")],
+                                   [InlineKeyboardButton("👤 Администратор-2", url="https://t.me/tgmngr")]
                                ])
+
+cancel_kb = InlineKeyboardMarkup(row_width=1,
+                                 inline_keyboard=[
+                                     [InlineKeyboardButton(text="❌ Отмена", callback_data="cancel")]
+                                 ])

@@ -9,7 +9,11 @@ from tgbot.config import load_config
 from tgbot.filters.admin import AdminFilter
 from tgbot.handlers.admin import register_admin
 from tgbot.handlers.echo import register_echo
-from tgbot.handlers.user import register_user
+from tgbot.handlers.referral_syst import register_referral_sys
+from tgbot.handlers.main_menu import register_user
+from tgbot.handlers.wallet.present import register_present
+from tgbot.handlers.wallet.promos import register_promo
+from tgbot.handlers.wallet.withdrawal_of_funds import register_withdrawal
 from tgbot.middlewares.environment import EnvironmentMiddleware
 
 logger = logging.getLogger(__name__)
@@ -26,6 +30,10 @@ def register_all_filters(dp):
 def register_all_handlers(dp):
     register_admin(dp)
     register_user(dp)
+    register_referral_sys(dp)
+    register_withdrawal(dp)
+    register_present(dp)
+    register_promo(dp)
 
     register_echo(dp)
 
