@@ -13,4 +13,8 @@ class Present(StatesGroup):
 
 class Promo(StatesGroup):
     Activate_promo = State()
-    Buy_promo = State()
+    Name = State()
+    Count = State()
+    Price = State()
+    Buy = State()
+
