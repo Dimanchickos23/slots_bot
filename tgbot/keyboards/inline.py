@@ -66,3 +66,11 @@ cancel_kb = InlineKeyboardMarkup(row_width=1,
                                  inline_keyboard=[
                                      [InlineKeyboardButton(text="❌ Отмена", callback_data="cancel")]
                                  ])
+
+slots_kb = InlineKeyboardMarkup(row_width=2,
+                                inline_keyboard=[
+                                    [InlineKeyboardButton("🎰 Спин", callback_data="spin"),
+                                     InlineKeyboardButton("♻️ Ставка", callback_data="bet")],
+                                    [InlineKeyboardButton(text="🔙 Назад",
+                                                          callback_data=back_cb.new(action="to_games"))]
+                                ])

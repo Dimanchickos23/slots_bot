@@ -18,3 +18,6 @@ class Promo(StatesGroup):
     Price = State()
     Buy = State()
 
+
+class Slots(StatesGroup):
+    Bet = State()

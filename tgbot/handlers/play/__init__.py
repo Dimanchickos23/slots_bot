@@ -5,7 +5,7 @@ from tgbot.handlers.play.blackjack import start_blackjack
 from tgbot.handlers.play.games import start_games
 from tgbot.handlers.play.play_21 import start_21
 from tgbot.handlers.play.poker import start_poker
-from tgbot.handlers.play.slots import start_slots
+from tgbot.handlers.play.slots import start_slots, register_slots
 
 
 def register_play(dp: Dispatcher):
@@ -14,4 +14,4 @@ def register_play(dp: Dispatcher):
     dp.register_callback_query_handler(start_games, lambda cb: cb.data == "games")
     dp.register_callback_query_handler(start_21, lambda cb: cb.data == "21game")
     dp.register_callback_query_handler(start_poker, lambda cb: cb.data == "poker")
-    dp.register_callback_query_handler(start_slots, lambda cb: cb.data == "slots")
+    register_slots(dp)

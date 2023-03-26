@@ -39,8 +39,8 @@ async def approve_code(message: Message, state: FSMContext):
                                "количества активаций!</b>")
     await sleep(1.5)
     await bot.delete_message(message.chat.id, msg.message_id)
-    await bot.send_animation(message.chat.id, animation="CgACAgIAAxkBAAEBuyFkGeE"
-                                                        "-CZ4iDObTVA5tQD1t_LZZxwACJS0AAkJbyUhgfTtFSyXqfC8E",
+    await bot.send_animation(message.chat.id, animation="CgACAgIAAxkBAAEBvb1kIHeXlluLI7"
+                                                        "wGSa8qUPGJndrHRQACJS0AAkJbyUhgfTtFSyXqfC8E",
                              caption="💰 <b>Кошелёк</b>\n\n— Баланс: <b>0.0 ₽</b>",
                              reply_markup=wallet_kb)
 
@@ -116,8 +116,8 @@ async def construct_promo(message: Message, state: FSMContext):
     msg = await message.answer("<b>⚠️ Произошла ошибка, недостаточно средств!</b>")
     await sleep(1.5)
     await bot.delete_message(message.chat.id, msg.message_id)
-    await bot.send_animation(message.chat.id, animation="CgACAgIAAxkBAAEBuyFkGeE"
-                                                        "-CZ4iDObTVA5tQD1t_LZZxwACJS0AAkJbyUhgfTtFSyXqfC8E",
+    await bot.send_animation(message.chat.id, animation="CgACAgIAAxkBAAEBvb1kIHeXlluLI7"
+                                                        "wGSa8qUPGJndrHRQACJS0AAkJbyUhgfTtFSyXqfC8E",
                              caption="💰 <b>Кошелёк</b>\n\n— Баланс: <b>0.0 ₽</b>",
                              reply_markup=wallet_kb)
 

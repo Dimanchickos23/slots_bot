@@ -10,24 +10,24 @@ async def user_start(message: Message):
     if message.text[7:]:
         # add_ref_user(message, message.text[7:]) эту функцию смотри в пранкботе
         pass
-    await message.answer_animation(animation="CgACAgIAAxkBAAEBuyFkGeE-CZ4iDObTVA5tQD1t_LZZxwACJS0AAkJbyUhgfTtFSyXqfC8E",
+    await message.answer_animation(animation="CgACAgIAAxkBAAEBvb1kIHeXlluLI7wGSa8qUPGJndrHRQACJS0AAkJbyUhgfTtFSyXqfC8E",
                                    caption="<b>🎲 Добро пожаловать в КУБ!</b>", reply_markup=main_menu_kb,
                                    parse_mode="HTML")
 
 
 async def user_play(message: Message):
-    await message.answer_animation(animation="CgACAgIAAxkBAAEBuyFkGeE-CZ4iDObTVA5tQD1t_LZZxwACJS0AAkJbyUhgfTtFSyXqfC8E",
+    await message.answer_animation(animation="CgACAgIAAxkBAAEBvb1kIHeXlluLI7wGSa8qUPGJndrHRQACJS0AAkJbyUhgfTtFSyXqfC8E",
                                    reply_markup=play_kb)
 
 
 async def user_wallet(message: Message):
-    await message.answer_animation(animation="CgACAgIAAxkBAAEBuyFkGeE-CZ4iDObTVA5tQD1t_LZZxwACJS0AAkJbyUhgfTtFSyXqfC8E",
+    await message.answer_animation(animation="CgACAgIAAxkBAAEBvb1kIHeXlluLI7wGSa8qUPGJndrHRQACJS0AAkJbyUhgfTtFSyXqfC8E",
                                    caption="💰 <b>Кошелёк</b>\n\n— Баланс: <b>0.0 ₽</b>",
                                    reply_markup=wallet_kb)
 
 
 async def user_profile(message: Message):
-    await message.answer_animation(animation="CgACAgIAAxkBAAEBuyFkGeE-CZ4iDObTVA5tQD1t_LZZxwACJS0AAkJbyUhgfTtFSyXqfC8E",
+    await message.answer_animation(animation="CgACAgIAAxkBAAEBvb1kIHeXlluLI7wGSa8qUPGJndrHRQACJS0AAkJbyUhgfTtFSyXqfC8E",
                                    caption=f"<b>👤 Профиль</b>\n\n"
                                            f"<b>🆔 ID:</b>\n<code>{message.from_user.id}</code>\n"
                                            f"<b>👤 Username:</b>\n<code>{message.from_user.username}</code>\n"
@@ -36,7 +36,7 @@ async def user_profile(message: Message):
 
 
 async def user_help(message: Message):
-    await message.answer_animation(animation="CgACAgIAAxkBAAEBuyFkGeE-CZ4iDObTVA5tQD1t_LZZxwACJS0AAkJbyUhgfTtFSyXqfC8E",
+    await message.answer_animation(animation="CgACAgIAAxkBAAEBvb1kIHeXlluLI7wGSa8qUPGJndrHRQACJS0AAkJbyUhgfTtFSyXqfC8E",
                                    reply_markup=help_kb)
 
 
