@@ -1,3 +1,4 @@
+import asyncio
 from asyncio import sleep
 
 from aiogram import Dispatcher, Bot
@@ -23,11 +24,6 @@ async def start_slots(cb: CallbackQuery, state: FSMContext):
                                   f"<b>💰 Ваша ставка - {bot['bet']} ₽</b>",
                                   reply_markup=slots_kb
                                   )
-
-
-async def cancel_slots(cb: CallbackQuery):
-    await cb.answer()
-    await cb.message.edit_caption(caption="", reply_markup=play_kb)
 
 
 async def set_new_bet(cb: CallbackQuery, state: FSMContext):
@@ -106,19 +102,20 @@ async def spin(cb: CallbackQuery):
     await sleep(2.35)
     if value not in winning_slots:
         await cb.message.answer(
-            f"{name}, вы проиграли. 😢"
+            f"{name}, вы проиграли. 😢",
+            reply_markup=slots_kb
         )
     else:
         prize = winning_slots[value]["prize"]
         await cb.message.answer(
             f"{name}, поздравляем с победой!\n"
-            f"Ваш выйгрыш — <b>{bot['bet']*prize} ₽</b>"
+            f"Ваш выйгрыш — <b>{bot['bet']*prize} ₽</b>",
+            reply_markup=slots_kb
         )
 
 
 def register_slots(dp: Dispatcher):
     dp.register_callback_query_handler(start_slots, lambda cb: cb.data == "slots")
-    dp.register_callback_query_handler(cancel_slots, back_cb.filter(action="to_games"))
     dp.register_callback_query_handler(start_slots, back_cb.filter(action="to_slots"), state=Slots.Bet)
     dp.register_callback_query_handler(set_new_bet, lambda cb: cb.data == "bet")
     dp.register_message_handler(approve_bet, Regexp(r"^([1-9][0-9]|100)$"), state=Slots.Bet)

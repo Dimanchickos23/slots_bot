@@ -74,3 +74,11 @@ slots_kb = InlineKeyboardMarkup(row_width=2,
                                     [InlineKeyboardButton(text="🔙 Назад",
                                                           callback_data=back_cb.new(action="to_games"))]
                                 ])
+
+
+games_kb = InlineKeyboardMarkup(row_width=2,
+                                inline_keyboard=[
+                                    [InlineKeyboardButton(text="➕ Создать игру", callback_data="create_game")],
+                                    [InlineKeyboardButton(text="🔙 Назад",
+                                                          callback_data=back_cb.new(action="to_games"))]
+                                ])

@@ -21,3 +21,7 @@ class Promo(StatesGroup):
 
 class Slots(StatesGroup):
     Bet = State()
+
+
+class Play(StatesGroup):
+    Bet = State()
