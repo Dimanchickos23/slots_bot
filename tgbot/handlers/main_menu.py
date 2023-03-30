@@ -1,4 +1,5 @@
 from aiogram import Dispatcher
+from aiogram.dispatcher import FSMContext
 from aiogram.types import Message
 
 from tgbot.keyboards.inline import play_kb, wallet_kb, referral_kb, help_kb
@@ -15,18 +16,21 @@ async def user_start(message: Message):
                                    parse_mode="HTML")
 
 
-async def user_play(message: Message):
+async def user_play(message: Message, state: FSMContext):
+    await state.finish()
     await message.answer_animation(animation="CgACAgIAAxkBAAEBvb1kIHeXlluLI7wGSa8qUPGJndrHRQACJS0AAkJbyUhgfTtFSyXqfC8E",
                                    reply_markup=play_kb)
 
 
-async def user_wallet(message: Message):
+async def user_wallet(message: Message, state: FSMContext):
+    await state.finish()
     await message.answer_animation(animation="CgACAgIAAxkBAAEBvb1kIHeXlluLI7wGSa8qUPGJndrHRQACJS0AAkJbyUhgfTtFSyXqfC8E",
                                    caption="💰 <b>Кошелёк</b>\n\n— Баланс: <b>0.0 ₽</b>",
                                    reply_markup=wallet_kb)
 
 
-async def user_profile(message: Message):
+async def user_profile(message: Message, state: FSMContext):
+    await state.finish()
     await message.answer_animation(animation="CgACAgIAAxkBAAEBvb1kIHeXlluLI7wGSa8qUPGJndrHRQACJS0AAkJbyUhgfTtFSyXqfC8E",
                                    caption=f"<b>👤 Профиль</b>\n\n"
                                            f"<b>🆔 ID:</b>\n<code>{message.from_user.id}</code>\n"
@@ -35,7 +39,8 @@ async def user_profile(message: Message):
                                    reply_markup=referral_kb)
 
 
-async def user_help(message: Message):
+async def user_help(message: Message, state: FSMContext):
+    await state.finish()
     await message.answer_animation(animation="CgACAgIAAxkBAAEBvb1kIHeXlluLI7wGSa8qUPGJndrHRQACJS0AAkJbyUhgfTtFSyXqfC8E",
                                    reply_markup=help_kb)
 

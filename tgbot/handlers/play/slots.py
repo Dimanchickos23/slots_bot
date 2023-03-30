@@ -1,4 +1,3 @@
-import asyncio
 from asyncio import sleep
 
 from aiogram import Dispatcher, Bot
@@ -7,7 +6,7 @@ from aiogram.dispatcher.filters import Regexp
 from aiogram.types import CallbackQuery, Message
 from aiogram.utils.exceptions import MessageNotModified
 
-from tgbot.keyboards.inline import slots_kb, play_kb, back_cb, back_kb
+from tgbot.keyboards.inline import slots_kb, back_cb, back_kb
 from tgbot.misc.states import Slots
 
 
@@ -15,42 +14,66 @@ async def start_slots(cb: CallbackQuery, state: FSMContext):
     await cb.answer()
     await state.finish()
     bot = Bot.get_current()
-    await cb.message.edit_caption("<b>🎰 SLOTS</b>\n\n"
-                                  "<b>🎁 Рейты:</b>\n"
-                                  "— При выбивании 2 одинаковых предмета на 1 и 2 позиции ваша ставка умножается на "
-                                  "<b>x2</b>\n "
-                                  "— При выбивании 3 одинаковых предметов подряд ваша ставка умножается на <b>x5</b>\n"
-                                  "— При выбивании трех 7 ваша ставка умножается на <b>x7</b>\n\n"
-                                  f"<b>💰 Ваша ставка - {bot['bet']} ₽</b>",
-                                  reply_markup=slots_kb
-                                  )
+    slots_text = f"<b>🎰 SLOTS</b>\n\n<b>🎁 Рейты:</b>\n— При выбивании 2 одинаковых предмета на 1 и 2 позиции ваша " \
+                 f"ставка умножается на <b>x2</b>\n— При выбивании 3 одинаковых предметов подряд ваша ставка " \
+                 f"умножается на <b>x5</b>\n— При выбивании трех 7 ваша ставка умножается на <b>x7</b>\n\n<b>💰 Ваша " \
+                 f"ставка - {bot['bet']} ₽</b> "
+
+    if cb.message.animation:
+        await cb.message.edit_caption(
+            caption=slots_text,
+            reply_markup=slots_kb
+        )
+    else:
+        await cb.message.answer_animation(
+            animation="CgACAgIAAxkBAAEBvb1kIHeXlluLI7wGSa8qUPGJndrHRQACJS0AAkJbyUhgfTtFSyXqfC8E",
+            caption=slots_text,
+            reply_markup=slots_kb
+        )
 
 
 async def set_new_bet(cb: CallbackQuery, state: FSMContext):
     await cb.answer()
     await Slots.Bet.set()
     await state.update_data(msg=cb.message)
-    await cb.message.edit_caption("<b>🎰 SLOTS</b>\n\n"
-                                  "— Доступно: <b>0.0 ₽</b>\n"
-                                  "— Минимум: <b>10 ₽</b>\n"
-                                  "— Максимум: <b>100 ₽</b>\n\n"
-                                  "<b>ℹ️ Введите новую ставку</b>",
-                                  reply_markup=back_kb("to_slots"))
+    if cb.message.animation:
+        await cb.message.edit_caption("<b>🎰 SLOTS</b>\n\n"
+                                      "— Доступно: <b>0.0 ₽</b>\n"
+                                      "— Минимум: <b>10 ₽</b>\n"
+                                      "— Максимум: <b>100 ₽</b>\n\n"
+                                      "<b>ℹ️ Введите новую ставку</b>",
+                                      reply_markup=back_kb("to_slots"))
+    else:
+        await cb.message.edit_text("<b>🎰 SLOTS</b>\n\n"
+                                   "— Доступно: <b>0.0 ₽</b>\n"
+                                   "— Минимум: <b>10 ₽</b>\n"
+                                   "— Максимум: <b>100 ₽</b>\n\n"
+                                   "<b>ℹ️ Введите новую ставку</b>",
+                                   reply_markup=back_kb("to_slots"))
 
 
 async def wrong_bet(message: Message, state: FSMContext):
     await sleep(0.5)
+    bot = Bot.get_current()
+    await message.delete()
+    data = await state.get_data()
+    msg = data["msg"]
     try:
-        bot = Bot.get_current()
-        await message.delete()
-        data = await state.get_data()
-        msg = data["msg"]
-        await bot.edit_message_caption(msg.chat.id, msg.message_id,
-                                       caption="<b>⚠️ Неправильный ввод, нужно ввести число</b>\n\n"
-                                               "— Минимум: <b>10</b>\n"
-                                               "— Максимум: <b>100</b>\n\n"
-                                               "<b>ℹ️ Введите новую ставку</b>",
-                                       reply_markup=back_kb("to_slots"))
+
+        if msg.animation:
+            await bot.edit_message_caption(msg.chat.id, msg.message_id,
+                                           caption="<b>⚠️ Неправильный ввод, нужно ввести число</b>\n\n"
+                                                   "— Минимум: <b>10</b>\n"
+                                                   "— Максимум: <b>100</b>\n\n"
+                                                   "<b>ℹ️ Введите новую ставку</b>",
+                                           reply_markup=back_kb("to_slots"))
+        else:
+            await bot.edit_message_text("<b>⚠️ Неправильный ввод, нужно ввести число</b>\n\n"
+                                        "— Минимум: <b>10</b>\n"
+                                        "— Максимум: <b>100</b>\n\n"
+                                        "<b>ℹ️ Введите новую ставку</b>",
+                                        msg.chat.id, msg.message_id,
+                                        reply_markup=back_kb("to_slots"))
     except MessageNotModified:
         pass
 
@@ -63,16 +86,30 @@ async def approve_bet(message: Message, state: FSMContext):
     bot['bet'] = int(message.text)
     await sleep(0.5)
     await message.delete()
-    await bot.edit_message_caption(msg.chat.id, msg.message_id,
-                                   caption="<b>🎰 SLOTS</b>\n\n"
-                                           "<b>🎁 Рейты:</b>\n"
-                                           "— При выбивании 2 одинаковых предмета на 1 и 2 позиции ваша ставка "
-                                           "умножается на <b>x2</b>\n "
-                                           "— При выбивании 3 одинаковых предметов подряд ваша ставка умножается на "
-                                           "<b>x5</b>\n "
-                                           "— При выбивании трех 7 ваша ставка умножается на <b>x7</b>\n\n"
-                                           f"<b>💰 Ваша ставка - {bot['bet']} ₽</b>",
-                                   reply_markup=slots_kb)
+    if msg.animation:
+        await bot.edit_message_caption(msg.chat.id, msg.message_id,
+                                       caption="<b>🎰 SLOTS</b>\n\n"
+                                               "<b>🎁 Рейты:</b>\n"
+                                               "— При выбивании 2 одинаковых предмета на 1 и 2 позиции ваша ставка "
+                                               "умножается на <b>x2</b>\n "
+                                               "— При выбивании 3 одинаковых предметов подряд ваша ставка умножается "
+                                               "на "
+                                               "<b>x5</b>\n "
+                                               "— При выбивании трех 7 ваша ставка умножается на <b>x7</b>\n\n"
+                                               f"<b>💰 Ваша ставка - {bot['bet']} ₽</b>",
+                                       reply_markup=slots_kb)
+    else:
+        await bot.edit_message_text("<b>🎰 SLOTS</b>\n\n"
+                                    "<b>🎁 Рейты:</b>\n"
+                                    "— При выбивании 2 одинаковых предмета на 1 и 2 позиции ваша ставка "
+                                    "умножается на <b>x2</b>\n "
+                                    "— При выбивании 3 одинаковых предметов подряд ваша ставка умножается на "
+                                    "<b>x5</b>\n "
+                                    "— При выбивании трех 7 ваша ставка умножается на <b>x7</b>\n\n"
+                                    f"<b>💰 Ваша ставка - {bot['bet']} ₽</b>",
+                                    msg.chat.id, msg.message_id,
+                                    reply_markup=slots_kb
+                                    )
 
 
 async def spin(cb: CallbackQuery):
@@ -109,14 +146,14 @@ async def spin(cb: CallbackQuery):
         prize = winning_slots[value]["prize"]
         await cb.message.answer(
             f"{name}, поздравляем с победой!\n"
-            f"Ваш выйгрыш — <b>{bot['bet']*prize} ₽</b>",
+            f"Ваш выйгрыш — <b>{bot['bet'] * prize} ₽</b>",
             reply_markup=slots_kb
         )
 
 
 def register_slots(dp: Dispatcher):
     dp.register_callback_query_handler(start_slots, lambda cb: cb.data == "slots")
-    dp.register_callback_query_handler(start_slots, back_cb.filter(action="to_slots"), state=Slots.Bet)
+    dp.register_callback_query_handler(start_slots, back_cb.filter(action="to_slots"), state="*")
     dp.register_callback_query_handler(set_new_bet, lambda cb: cb.data == "bet")
     dp.register_message_handler(approve_bet, Regexp(r"^([1-9][0-9]|100)$"), state=Slots.Bet)
     dp.register_message_handler(wrong_bet, state=Slots.Bet)

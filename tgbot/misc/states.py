@@ -25,3 +25,6 @@ class Slots(StatesGroup):
 
 class Play(StatesGroup):
     Bet = State()
+    Game = State()
+    Players_numb = State()
+    Test = State()
