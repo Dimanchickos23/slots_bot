@@ -142,6 +142,7 @@ async def bot_game(message: Message, state: FSMContext):
     bet = data["bet"]
     bot_dice_value = data["bot_dice_value"]
     logging.info(f"{message.dice.value}")
+    await sleep(2.35)
     if message.reply_to_message:
         if message.dice.value > bot_dice_value:
             await message.answer("Вы победили!", reply_markup=main_menu_kb)
@@ -167,7 +168,7 @@ def register_games(dp: Dispatcher):
     dp.register_callback_query_handler(start_games, back_cb.filter(action="start_games"), state=Play.Bet)
     dp.register_callback_query_handler(back_to_play_menu, back_cb.filter(action="to_games"))
     dp.register_callback_query_handler(create_game, lambda cb: cb.data == "create_game")
-    dp.register_message_handler(choose_game_type, Regexp(r"^([3-9][0-9]|[1-9][0-9]{2,10)$"), state=Play.Bet)
+    dp.register_message_handler(choose_game_type, Regexp(r"^([3-9][0-9]|[1-9][0-9]{2,10})$"), state=Play.Bet)
     dp.register_message_handler(wrong_game_bet, state=Play.Bet)
     dp.register_message_handler(choose_players_number, state=Play.Game)
     dp.register_message_handler(register_game_creation, state=Play.Players_numb)
