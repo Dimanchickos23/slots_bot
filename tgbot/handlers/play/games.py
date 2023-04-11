@@ -170,7 +170,7 @@ def register_games(dp: Dispatcher):
     dp.register_callback_query_handler(create_game, lambda cb: cb.data == "create_game")
     dp.register_message_handler(choose_game_type, Regexp(r"^([3-9][0-9]|[1-9][0-9]{2,10})$"), state=Play.Bet)
     dp.register_message_handler(wrong_game_bet, state=Play.Bet)
-    dp.register_message_handler(choose_players_number, state=Play.Game)
+    dp.register_message_handler(choose_players_number,state=Play.Game, content_types=ContentType.ANY)
     dp.register_message_handler(register_game_creation, state=Play.Players_numb)
     dp.register_message_handler(bot_game, state=Play.Test, content_types=ContentType.DICE)
     dp.register_message_handler(wrong_message, state=Play.Test)
