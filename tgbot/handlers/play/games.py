@@ -7,7 +7,7 @@ from aiogram.dispatcher.filters import Regexp
 from aiogram.types import CallbackQuery, Message, ContentType
 from aiogram.utils.exceptions import MessageNotModified
 
-from tgbot.keyboards.inline import play_kb, back_cb, back_kb, create_game_kb
+from tgbot.keyboards.inline import play_kb, back_cb, back_kb, create_game_kb, add_lobby, lobby_cb, join_kb
 from tgbot.keyboards.main_menu import dice_games_kb, players_num_kb, main_menu_kb
 from tgbot.misc.states import Play
 
@@ -72,14 +72,14 @@ async def choose_players_number(message: Message, state: FSMContext):
     data = await state.get_data()
     bet = data["bet"]
     await sleep(1.5)
-    if message.text in {"🎲", "🎯", "🏀", "🎳", "⚽️"}:
-        await state.update_data(game_symb=message.text)
+    if message.dice.emoji in {"🎲", "🎯", "🏀", "🎳", "⚽"}:
+        await state.update_data(game_symb=message.dice.emoji)
         await Play.Players_numb.set()
         await message.answer_animation(
             animation="CgACAgIAAxkBAAEBvb1kIHeXlluLI7wGSa8qUPGJndrHRQACJS0AAkJbyUhgfTtFSyXqfC8E",
             caption="<b>➕ Создание игры в 🎲 GAMES</b>\n\n"
                     f"— Ваша ставка: <b>{bet} ₽</b>\n"
-                    f"— Символ: {message.text}\n\n"
+                    f"— Символ: {message.dice.emoji}\n\n"
                     "<b>ℹ️ Выберите количество игроков или игру с ботом</b>",
             reply_markup=players_num_kb)
     elif message.text == "❌":
@@ -111,15 +111,24 @@ async def register_game_creation(message: Message, state: FSMContext):
         await message.answer(f"Теперь твой черед. Отправь {game_symb} ответом на это сообщение")
         await Play.Test.set()
     elif message.text in {"2 игрока 👨‍👦", "3 игрока 👨‍👦‍👦", "4 игрока 👨‍👨‍👦‍👦"}:
-        await message.answer_animation(
-            animation="CgACAgIAAxkBAAEBvb1kIHeXlluLI7wGSa8qUPGJndrHRQACJS0AAkJbyUhgfTtFSyXqfC8E",
-            caption="<b>🎲 GAMES</b>\n\n"
-                    f"— Ваша ставка: <b>{bet} ₽</b>\n"
-                    f"— Символ: {game_symb}\n"
-                    f"— Количество игроков: <b>{message.text[0]}</b>\n\n"
-                    "<b>ℹ️ Игра успешно создана</b>",
-            reply_markup=main_menu_kb
-        )
+        logging.info(message.from_user.id)
+        logging.info(message.from_user.get_mention())
+        player_id_name = [[message.from_user.id, message.from_user.username]]
+        if len(create_game_kb.inline_keyboard) > 8:
+            await message.answer("<b>⚠ Все места под лобби заняты, попробуйте создать игру чуть позже</b>",
+                                 reply_markup=main_menu_kb)
+        else:
+            add_lobby(int(bet), game_symb, int(message.text[0]), player_id_name)
+            await message.answer_animation(
+                animation="CgACAgIAAxkBAAEBvb1kIHeXlluLI7wGSa8qUPGJndrHRQACJS0AAkJbyUhgfTtFSyXqfC8E",
+                caption="<b>🎲 GAMES</b>\n\n"
+                        f"— Ваша ставка: <b>{bet} ₽</b>\n"
+                        f"— Символ: {game_symb}\n"
+                        f"— Количество игроков: <b>{message.text[0]}</b>\n\n"
+                        "<b>ℹ️ Игра успешно создана</b>",
+                reply_markup=main_menu_kb
+            )
+
         await state.finish()
     elif message.text == "❌":
         await state.finish()
@@ -163,14 +172,38 @@ async def wrong_message(message: Message, state: FSMContext):
         pass
 
 
+async def game_lobby(cb: CallbackQuery, callback_data: dict):
+    await cb.answer()
+    game_numb = callback_data['game_numb']
+    bet = callback_data['bet']
+    game_symb = callback_data['game_symb']
+    players_numb = int(callback_data['players_numb'])
+    players_id_name = callback_data['players_id_name']  # TODO: тут строка, а не список, надо исправить
+    logging.info(players_id_name)
+    string = ""
+    count = 0
+    for obj in players_id_name:
+        count += 1
+        string += f"{count}🪝 - @{players_id_name[1]}\n"
+    if count != players_numb:
+        for i in range(players_numb - count):
+            string += f"{i + (count + 1)}🪝 - <b>Ожидание..</b>"
+    await cb.message.edit_caption(f"<b>{game_symb} GAMES №{game_numb}</b>\n\n"
+                                  f"💰 Ставка: <b>{bet}</b>\n\n"
+                                  f"👥 <b>Игроки:</b>\n" + string,
+                                  reply_markup=join_kb)
+
+
 def register_games(dp: Dispatcher):
     dp.register_callback_query_handler(start_games, lambda cb: cb.data == "games")
     dp.register_callback_query_handler(start_games, back_cb.filter(action="start_games"), state=Play.Bet)
+    dp.register_callback_query_handler(start_games, back_cb.filter(action="start_games"))
     dp.register_callback_query_handler(back_to_play_menu, back_cb.filter(action="to_games"))
     dp.register_callback_query_handler(create_game, lambda cb: cb.data == "create_game")
     dp.register_message_handler(choose_game_type, Regexp(r"^([3-9][0-9]|[1-9][0-9]{2,10})$"), state=Play.Bet)
     dp.register_message_handler(wrong_game_bet, state=Play.Bet)
-    dp.register_message_handler(choose_players_number,state=Play.Game, content_types=ContentType.ANY)
+    dp.register_message_handler(choose_players_number, state=Play.Game, content_types=ContentType.ANY)
     dp.register_message_handler(register_game_creation, state=Play.Players_numb)
     dp.register_message_handler(bot_game, state=Play.Test, content_types=ContentType.DICE)
     dp.register_message_handler(wrong_message, state=Play.Test)
+    dp.register_callback_query_handler(game_lobby, lobby_cb.filter())

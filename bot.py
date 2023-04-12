@@ -53,7 +53,8 @@ async def main():
     dp = Dispatcher(bot, storage=storage)
 
     bot['config'] = config
-    bot['bet'] = 10 #базовый размер ставки в слотах
+    bot['bet'] = 10  # базовый размер ставки в слотах
+    bot['number'] = 0   # количество сыгранных игр
 
     register_all_middlewares(dp, config)
     register_all_filters(dp)

@@ -1,3 +1,6 @@
+import logging
+
+from aiogram import Bot
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.callback_data import CallbackData
 
@@ -75,10 +78,41 @@ slots_kb = InlineKeyboardMarkup(row_width=2,
                                                           callback_data=back_cb.new(action="to_games"))]
                                 ])
 
-
 create_game_kb = InlineKeyboardMarkup(row_width=2,
-                                inline_keyboard=[
-                                    [InlineKeyboardButton(text="➕ Создать игру", callback_data="create_game")],
-                                    [InlineKeyboardButton(text="🔙 Назад",
-                                                          callback_data=back_cb.new(action="to_games"))]
-                                ])
+                                      inline_keyboard=[
+                                          [InlineKeyboardButton(text="➕ Создать игру", callback_data="create_game")],
+                                          [InlineKeyboardButton(text="🔙 Назад",
+                                                                callback_data=back_cb.new(action="to_games"))]
+                                      ])
+
+lobby_cb = CallbackData('lobby', 'players_id_name', 'players_numb', 'bet', 'game_symb', 'game_numb')
+
+
+# добавляет клавишу с лобби в create_game_kb, в клавишу зашиты все данные об игре
+def add_lobby(bet: int, game_symbol: str, players_numb: int, players_id_name: list[list[int, str]]):
+    bot = Bot.get_current()
+    bot['number'] += 1
+    logging.info(players_id_name)
+    create_game_kb.inline_keyboard.insert(0,
+                                          [
+                                              InlineKeyboardButton(
+                                                  text=f"{game_symbol} Игра № {bot['number']}"
+                                                       f" | {bet} ₽ | {len(players_id_name)}/{players_numb}",
+                                                  callback_data=lobby_cb.new(
+                                                      players_id_name=players_id_name,
+                                                      players_numb=players_numb,
+                                                      bet=bet,
+                                                      game_symb=game_symbol,
+                                                      game_numb=bot['number']
+                                                  )
+                                              )
+                                          ]
+                                          )
+
+
+join_kb = InlineKeyboardMarkup(row_width=2,
+                               inline_keyboard=[
+                                   [InlineKeyboardButton(text="➕ Подключиться", callback_data="join"),
+                                    InlineKeyboardButton(text="🔙 Назад",
+                                                         callback_data=back_cb.new(action="start_games"))]
+                               ])
