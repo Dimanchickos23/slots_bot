@@ -2,7 +2,7 @@ import logging
 from asyncio import sleep
 from itertools import zip_longest
 
-from aiogram import Dispatcher
+from aiogram import Dispatcher, Bot
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Regexp
 from aiogram.types import CallbackQuery, Message, ContentType
@@ -10,7 +10,7 @@ from aiogram.utils.exceptions import MessageNotModified
 
 from tgbot.keyboards.inline import play_kb, back_cb, back_kb, create_game_kb, add_lobby, lobby_cb, join_kb, update_lobby
 from tgbot.keyboards.main_menu import dice_games_kb, players_num_kb, main_menu_kb
-from tgbot.misc.states import Play
+from tgbot.misc.states import Play, Lobby
 
 
 async def start_games(cb: CallbackQuery, state: FSMContext):
@@ -34,6 +34,7 @@ async def create_game(cb: CallbackQuery, state: FSMContext):
     await cb.answer()
     await Play.Bet.set()
     await state.update_data(msg=cb.message)
+    await state.reset_data()
     await cb.message.edit_caption("<b>➕ Создание игры в 🎲 GAMES</b>\n\n"
                                   "— Минимум: 30 ₽\n"
                                   "— Ваш баланс: 0.0 ₽\n\n"
@@ -114,13 +115,14 @@ async def register_game_creation(message: Message, state: FSMContext):
     elif message.text in {"2 игрока 👨‍👦", "3 игрока 👨‍👦‍👦", "4 игрока 👨‍👨‍👦‍👦"}:
         logging.info(message.from_user.id)
         logging.info(message.from_user.get_mention())
-        player_id = message.from_user.id
+        player_id = str(message.from_user.id)
         player_name = message.from_user.username
         if len(create_game_kb.inline_keyboard) > 8:
             await message.answer("<b>⚠ Все места под лобби заняты, попробуйте создать игру чуть позже</b>",
                                  reply_markup=main_menu_kb)
         else:
             add_lobby(int(bet), game_symb, int(message.text[0]), player_id, player_name)
+
             await message.answer_animation(
                 animation="CgACAgIAAxkBAAEBvb1kIHeXlluLI7wGSa8qUPGJndrHRQACJS0AAkJbyUhgfTtFSyXqfC8E",
                 caption="<b>🎲 GAMES</b>\n\n"
@@ -176,36 +178,39 @@ async def wrong_message(message: Message, state: FSMContext):
 
 async def game_lobby(cb: CallbackQuery, callback_data: dict):
     await cb.answer()
-    # TODO: Дописать игру, когда заполнилось лобби, сделать тоже самое с игрой 21
-    user_id = str(cb.from_user.id)
-    user_name = cb.from_user.username
+    bot = Bot.get_current()
 
     game_numb = int(callback_data['game_numb'])
-    current_players_numb = len(callback_data['players_id_csv'].split(","))
     bet = int(callback_data['bet'])
     game_symb = callback_data['game_symb']
     players_numb = int(callback_data['players_numb'])
-    button_text = f"{game_symb} Игра № {game_numb} | {bet} ₽ | {current_players_numb}/{players_numb}"
 
-    if user_id not in callback_data['players_id_csv'].split(","):
-        callback_data['players_id_csv'] += "," + user_id
-        callback_data['players_names_csv'] += "," + user_name
-        update_lobby(button_text, current_players_numb + 1)
-
-    players_id = callback_data['players_id_csv'].split(",")
-    players_name = callback_data['players_names_csv'].split(",")
-
-    players_name = ["@" + name for name in players_name]
+    players_name = ["@" + name for name in bot[str(game_numb)][1].split(",")]
     number_emoji = ["1️⃣", "2️⃣", "3️⃣", "4️⃣"]
     string = ""
     for (emoji, name) in zip_longest(number_emoji, players_name, fillvalue="<b>Ожидание..</b>"):
         string += f"{emoji} - {name}\n"
 
-    await cb.message.edit_caption(f"<b>{game_symb} GAMES №{game_numb}</b>\n\n"
-                                  f"💰 Ставка: <b>{bet}</b>\n\n"
-                                  f"👥 <b>Игроки:</b>\n" + string,
-                                  reply_markup=join_kb(bet, game_symb, players_numb, callback_data['players_id_csv'],
-                                                       callback_data['players_names_csv'], game_numb))
+    try:
+        await cb.message.edit_caption(f"<b>{game_symb} GAMES №{game_numb}</b>\n\n"
+                                      f"💰 Ставка: <b>{bet}</b>\n\n"
+                                      f"👥 <b>Игроки:</b>\n" + string,
+                                      reply_markup=join_kb(bet, game_symb, players_numb, game_numb))
+    except MessageNotModified:
+        pass
+
+
+async def join_lobby(cb: CallbackQuery, callback_data: dict):
+    user_id = str(cb.from_user.id)
+    user_name = cb.from_user.username
+    bot = Bot.get_current()
+    game_numb = callback_data['game_numb']
+
+    if user_id not in bot[str(game_numb)][0].split(","):
+        update_lobby(callback_data, user_id, user_name)
+
+    await game_lobby(cb, callback_data)
+
 
 
 def register_games(dp: Dispatcher):
@@ -220,4 +225,5 @@ def register_games(dp: Dispatcher):
     dp.register_message_handler(register_game_creation, state=Play.Players_numb)
     dp.register_message_handler(bot_game, state=Play.Test, content_types=ContentType.DICE)
     dp.register_message_handler(wrong_message, state=Play.Test)
-    dp.register_callback_query_handler(game_lobby, lobby_cb.filter())
+    dp.register_callback_query_handler(game_lobby, lobby_cb.filter(action='open'))
+    dp.register_callback_query_handler(join_lobby, lobby_cb.filter(action='join'))

@@ -6,7 +6,8 @@ main_menu_kb = ReplyKeyboardMarkup(
         [KeyboardButton("💰 Кошелёк"), KeyboardButton("👤 Профиль")],
         [KeyboardButton("ℹ️ Помощь")]
     ],
-    resize_keyboard=True
+    resize_keyboard=True,
+    one_time_keyboard=True
 )
 
 dice_games_kb = ReplyKeyboardMarkup(

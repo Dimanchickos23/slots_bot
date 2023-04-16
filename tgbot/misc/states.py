@@ -28,4 +28,6 @@ class Play(StatesGroup):
     Game = State()
     Players_numb = State()
     Test = State()
-    Lobby = State()
+
+
+Lobby = State(state='lobby')
