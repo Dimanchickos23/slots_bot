@@ -186,7 +186,7 @@ async def game_lobby(cb: CallbackQuery, callback_data: dict):
     players_numb = int(callback_data['players_numb'])
 
     players_name = ["@" + name for name in bot[str(game_numb)][1].split(",")]
-    number_emoji = ["1️⃣", "2️⃣", "3️⃣", "4️⃣"]
+    number_emoji = ["1️⃣", "2️⃣", "3️⃣", "4️⃣"][0:players_numb]
     string = ""
     for (emoji, name) in zip_longest(number_emoji, players_name, fillvalue="<b>Ожидание..</b>"):
         string += f"{emoji} - {name}\n"
@@ -200,17 +200,68 @@ async def game_lobby(cb: CallbackQuery, callback_data: dict):
         pass
 
 
+async def game_start(player_ids: list[str], players_names: list[str], game_symb: str, game_numb: int, bet, bot: Bot):
+    animation = "CgACAgIAAxkBAAEBvb1kIHeXlluLI7wGSa8qUPGJndrHRQACJS0AAkJbyUhgfTtFSyXqfC8E"
+    results = {}
+    logging.info(player_ids)
+    logging.info(players_names)
+    for i in range(len(players_names)):
+        results[players_names[i]] = 0
+
+    for (id, name) in zip(player_ids, players_names):
+        await bot.send_animation(id, animation, caption=f"<b>{game_symb} №{game_numb}</b>\n\n"
+                                                        f"— Ваш ход")
+
+        score = []
+        messages = []
+        for i in range(3):
+            message = await bot.send_dice(id, emoji=game_symb)
+            messages.append(message)
+            score.append(message.dice.value)
+
+        results[name] = sum(score)
+        sender_ids = [id for id in player_ids]
+        sender_ids.remove(id)
+        for sender in sender_ids:
+            await bot.send_animation(sender, animation, caption=f"<b>{game_symb} №{game_numb}</b>\n\n"
+                                                                f"— Ход игрока: @{name}")
+            for msg in messages:
+                await bot.copy_message(sender, id, msg.message_id)
+
+    results_str = ""
+    for player_name in results.keys():
+        results_str += f"@{player_name} [{results[player_name]}]\n"
+
+    winner = max(results,key=results.get)
+
+    for idi in player_ids:
+        await bot.send_animation(idi, animation, caption=f"<b>📊 Итоги игры №{game_numb}</b>\n\n"
+                                                         f"💰 Выигрыш: {round(bet*len(players_names)*0.95)} ₽\n\n"
+                                                         f"<b>ℹ️ Результаты:</b>\n" + results_str +
+                                                         f"\n<b>Победил: @{winner}</b>")
+
+    for row in create_game_kb.inline_keyboard:
+        for button in row:
+            if f"{game_symb} Игра № {game_numb}" in button.text:
+                row.remove(button)
+
+
 async def join_lobby(cb: CallbackQuery, callback_data: dict):
     user_id = str(cb.from_user.id)
     user_name = cb.from_user.username
     bot = Bot.get_current()
-    game_numb = callback_data['game_numb']
+    game_symb = callback_data['game_symb']
+    game_numb = int(callback_data['game_numb'])
+    bet = int(callback_data['bet'])
 
     if user_id not in bot[str(game_numb)][0].split(","):
         update_lobby(callback_data, user_id, user_name)
+        if int(callback_data['players_numb']) == len(bot[str(game_numb)][0].split(",")):
+            player_ids = bot[str(game_numb)][0].split(",")
+            player_names = bot[str(game_numb)][1].split(",")
+            await game_start(player_ids, player_names, game_symb, game_numb, bet, bot)
 
     await game_lobby(cb, callback_data)
-
 
 
 def register_games(dp: Dispatcher):
