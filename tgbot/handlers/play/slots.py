@@ -4,7 +4,7 @@ from aiogram import Dispatcher, Bot
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Regexp
 from aiogram.types import CallbackQuery, Message
-from aiogram.utils.exceptions import MessageNotModified
+from aiogram.utils.exceptions import MessageNotModified, BadRequest
 
 from tgbot.keyboards.inline import slots_kb, back_cb, back_kb
 from tgbot.misc.states import Slots
@@ -35,7 +35,7 @@ async def start_slots(cb: CallbackQuery, state: FSMContext):
 async def set_new_bet(cb: CallbackQuery, state: FSMContext):
     await cb.answer()
     await Slots.Bet.set()
-    await state.update_data(msg=cb.message)
+    await state.update_data(msg_id=cb.message.message_id)
     if cb.message.animation:
         await cb.message.edit_caption("<b>🎰 SLOTS</b>\n\n"
                                       "— Доступно: <b>0.0 ₽</b>\n"
@@ -57,22 +57,22 @@ async def wrong_bet(message: Message, state: FSMContext):
     bot = Bot.get_current()
     await message.delete()
     data = await state.get_data()
-    msg = data["msg"]
+    msg_id = data["msg_id"]
     try:
 
-        if msg.animation:
-            await bot.edit_message_caption(msg.chat.id, msg.message_id,
+        try:
+            await bot.edit_message_caption(message.chat.id, msg_id,
                                            caption="<b>⚠️ Неправильный ввод, нужно ввести число</b>\n\n"
                                                    "— Минимум: <b>10</b>\n"
                                                    "— Максимум: <b>100</b>\n\n"
                                                    "<b>ℹ️ Введите новую ставку</b>",
                                            reply_markup=back_kb("to_slots"))
-        else:
+        except BadRequest:
             await bot.edit_message_text("<b>⚠️ Неправильный ввод, нужно ввести число</b>\n\n"
                                         "— Минимум: <b>10</b>\n"
                                         "— Максимум: <b>100</b>\n\n"
                                         "<b>ℹ️ Введите новую ставку</b>",
-                                        msg.chat.id, msg.message_id,
+                                        message.chat.id, msg_id,
                                         reply_markup=back_kb("to_slots"))
     except MessageNotModified:
         pass
@@ -80,14 +80,14 @@ async def wrong_bet(message: Message, state: FSMContext):
 
 async def approve_bet(message: Message, state: FSMContext):
     data = await state.get_data()
-    msg = data["msg"]
+    msg_id = data["msg_id"]
     await state.finish()
     bot = Bot.get_current()
     bot['bet'] = int(message.text)
     await sleep(0.5)
     await message.delete()
-    if msg.animation:
-        await bot.edit_message_caption(msg.chat.id, msg.message_id,
+    try:
+        await bot.edit_message_caption(message.chat.id, msg_id,
                                        caption="<b>🎰 SLOTS</b>\n\n"
                                                "<b>🎁 Рейты:</b>\n"
                                                "— При выбивании 2 одинаковых предмета на 1 и 2 позиции ваша ставка "
@@ -98,7 +98,7 @@ async def approve_bet(message: Message, state: FSMContext):
                                                "— При выбивании трех 7 ваша ставка умножается на <b>x7</b>\n\n"
                                                f"<b>💰 Ваша ставка - {bot['bet']} ₽</b>",
                                        reply_markup=slots_kb)
-    else:
+    except BadRequest:
         await bot.edit_message_text("<b>🎰 SLOTS</b>\n\n"
                                     "<b>🎁 Рейты:</b>\n"
                                     "— При выбивании 2 одинаковых предмета на 1 и 2 позиции ваша ставка "
@@ -107,7 +107,7 @@ async def approve_bet(message: Message, state: FSMContext):
                                     "<b>x5</b>\n "
                                     "— При выбивании трех 7 ваша ставка умножается на <b>x7</b>\n\n"
                                     f"<b>💰 Ваша ставка - {bot['bet']} ₽</b>",
-                                    msg.chat.id, msg.message_id,
+                                    message.chat.id, msg_id,
                                     reply_markup=slots_kb
                                     )
 

@@ -78,12 +78,20 @@ slots_kb = InlineKeyboardMarkup(row_width=2,
                                                           callback_data=back_cb.new(action="to_games"))]
                                 ])
 
+
 create_game_kb = InlineKeyboardMarkup(row_width=2,
                                       inline_keyboard=[
                                           [InlineKeyboardButton(text="➕ Создать игру", callback_data="create_game")],
                                           [InlineKeyboardButton(text="🔙 Назад",
                                                                 callback_data=back_cb.new(action="to_games"))]
                                       ])
+
+create_21_kb = InlineKeyboardMarkup(row_width=2,
+                                    inline_keyboard=[
+                                        [InlineKeyboardButton(text="➕ Создать игру", callback_data="create_21")],
+                                        [InlineKeyboardButton(text="🔙 Назад",
+                                                              callback_data=back_cb.new(action="to_games"))]
+                                    ])
 
 lobby_cb = CallbackData('lobby', 'action', 'players_numb', 'bet', 'game_symb', 'game_numb')
 

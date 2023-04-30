@@ -21,6 +21,7 @@ async def bot_echo_all(message: types.Message, state: FSMContext):
         hcode(message.text)
     ]
     await message.answer('\n'.join(text))
+    await state.finish()
 
 
 def register_echo(dp: Dispatcher):

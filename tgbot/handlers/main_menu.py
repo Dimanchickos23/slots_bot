@@ -16,6 +16,12 @@ async def user_start(message: Message):
                                    parse_mode="HTML")
 
 
+async def finish_state(message: Message, state: FSMContext):
+    state_name = await state.get_state()
+    await state.finish()
+    await message.answer(f"Состояние {state_name} завершено")
+
+
 async def user_play(message: Message, state: FSMContext):
     await state.finish()
     await message.answer_animation(animation="CgACAgIAAxkBAAEBvb1kIHeXlluLI7wGSa8qUPGJndrHRQACJS0AAkJbyUhgfTtFSyXqfC8E",
@@ -47,6 +53,7 @@ async def user_help(message: Message, state: FSMContext):
 
 def register_user(dp: Dispatcher):
     dp.register_message_handler(user_start, commands=["start"], state="*")
+    dp.register_message_handler(finish_state, commands=["finish"], state="*")
     dp.register_message_handler(user_play, lambda message: message.text == "🎲 Играть")
     dp.register_message_handler(user_wallet, lambda message: message.text == "💰 Кошелёк")
     dp.register_message_handler(user_profile, lambda message: message.text == "👤 Профиль")
