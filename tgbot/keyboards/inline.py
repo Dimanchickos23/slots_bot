@@ -97,11 +97,12 @@ lobby_cb = CallbackData('lobby', 'action', 'players_numb', 'bet', 'game_symb', '
 
 
 # добавляет клавишу с лобби в create_game_kb, в клавишу зашиты все данные об игре
-def add_lobby(bet: int, game_symbol: str, players_numb: int, players_ids_csv: str, players_names_csv: str):
+def add_lobby(bet: int, game_symbol: str, players_numb: int, players_ids_csv: str, players_names_csv: str,
+              keyboard: InlineKeyboardMarkup):
     bot = Bot.get_current()
     bot['number'] += 1
     bot[str(bot['number'])] = [players_ids_csv, players_names_csv]
-    create_game_kb.inline_keyboard.insert(0,
+    keyboard.inline_keyboard.insert(0,
                                           [
                                               InlineKeyboardButton(
                                                   text=f"{game_symbol} Игра № {bot['number']}"

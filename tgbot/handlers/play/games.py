@@ -129,7 +129,7 @@ async def register_game_creation(message: Message, state: FSMContext):
             await message.answer("<b>⚠️ Все места под лобби заняты, попробуйте создать игру чуть позже</b>",
                                  reply_markup=main_menu_kb)
         else:
-            add_lobby(int(bet), game_symb, int(message.text[0]), player_id, player_name)
+            add_lobby(int(bet), game_symb, int(message.text[0]), player_id, player_name, create_game_kb)
 
             await message.answer_animation(
                 animation="CgACAgIAAxkBAAEBvb1kIHeXlluLI7wGSa8qUPGJndrHRQACJS0AAkJbyUhgfTtFSyXqfC8E",
@@ -269,7 +269,10 @@ async def join_lobby(cb: CallbackQuery, callback_data: dict):
         if int(callback_data['players_numb']) == len(bot[str(game_numb)][0].split(",")):
             player_ids = bot[str(game_numb)][0].split(",")
             player_names = bot[str(game_numb)][1].split(",")
-            await game_start(player_ids, player_names, game_symb, game_numb, bet, bot)
+            if game_symb in {"🎲", "🎯", "🏀", "🎳", "⚽"}:
+                await game_start(player_ids, player_names, game_symb, game_numb, bet, bot)
+            elif game_symb == '🃏':
+                pass
 
     await game_lobby(cb, callback_data)
 

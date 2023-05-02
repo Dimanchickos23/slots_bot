@@ -32,6 +32,7 @@ players_num_kb = ReplyKeyboardMarkup(
 
 player_num_kb = ReplyKeyboardMarkup(
     [
+        [KeyboardButton("Тестовая игра")],
         [KeyboardButton("2 игрока 👨‍👦"), KeyboardButton("3 игрока 👨‍👦‍👦")],
         [KeyboardButton("4 игрока 👨‍👨‍👦‍👦"), KeyboardButton("❌")]
     ],
